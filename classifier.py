@@ -18,8 +18,9 @@ def sample_normal(dataset):
     return [sample for samples in label_dict.values() for sample in samples[:min_size]]
 
 
+
 dataset = {}
-with open('./abm.json', 'r', encoding='utf-8') as jfile:
+with open('./ab.json', 'r', encoding='utf-8') as jfile:
     dataset = json.load(jfile)
 dataset = dataset['conf']
 dataset = sample_normal(dataset)
@@ -41,22 +42,6 @@ train = [{key:value for (key, value) in data.items() if key in features} for dat
 vec=DictVectorizer(sparse=False)
 train = vec.fit_transform(train)
 target = [data['label'] for data in dataset]
-
-
-# train = [
-#     [
-#         data['a_keyword_1'],
-#         data['b_keyword_1'],
-#         data['a_keyword_2'],
-#         data['b_keyword_2'],
-#         data['a_exist'],
-#         data['b_exist'],
-#         data['base_exist'],
-#         data['a_edit_type'],
-#         data['b_edit_type'],
-#         data['ab_edit_type'],
-#     ] for data in dataset]
-# target = [data['label'] for data in dataset]
 
 x_train, x_test, y_train, y_test = train_test_split(train, target, test_size=0.2)
 
