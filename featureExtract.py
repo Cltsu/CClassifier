@@ -31,7 +31,6 @@ def collect_conflict(data, conf_dict, fileIndex):
                 'B': conflict['b_contents'],
                 'base': conflict['base_contents'],
                 'resolution': conflict['res_region'],
-                # 'label': conflict['label'] if conflict['label'] == 'A' or conflict['label'] == 'B' else  'N',
                 'label': get_class_5(conflict),
                 'pre_label': conflict['label'],
                 'index': fileIndex,

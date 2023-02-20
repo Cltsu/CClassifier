@@ -44,6 +44,7 @@ def get_train_target(dataset):
         pass
                                                                             
     features = [
+        'repo',
         'a_kw',
         'a_fkw',
         'b_kw',
@@ -56,11 +57,11 @@ def get_train_target(dataset):
         'a_edit_type',
         'b_edit_type',
         'ab_edit_type',
-        'label',
         'a_region_size',
         'b_region_size',
         'base_region_size',
         'conf_chunk_size',
+        'label',
     ]
     feature_dataset = [{key:value for (key, value) in data.items() if key in features} for data in dataset]
     for sample in feature_dataset:
@@ -73,16 +74,19 @@ def get_train_target(dataset):
         sample.pop('b_kw')
         sample.pop('b_fkw')
         select_label(sample)
-    # feature_dataset = [data for data in feature_dataset if data['label'] != 'A' and data['label'] != 'B']
+    feature_dataset = [data for data in feature_dataset if data['label'] != 'A' and data['label'] != 'B']
     # feature_dataset = [data for data in feature_dataset if data['label'] == 'A' or data['label'] == 'B']
-    # feature_dataset = sample_normal(feature_dataset)
+    if udersample:
+        feature_dataset = sample_normal(feature_dataset)
     target = [data['label'] for data in feature_dataset]
+    repos = [data['repo'] for data in feature_dataset]
     train = [data for data in feature_dataset]
     for sample in train:
         sample.pop('label')
+        sample.pop('repo')
     vec=DictVectorizer(sparse=False)
     train = vec.fit_transform(train)
-    return train, target
+    return train, target, repos
 
 
 def error_predict_analysis(predict, target, label_set):
@@ -98,6 +102,26 @@ def error_predict_analysis(predict, target, label_set):
     print(count)
     print(count[target[0]] / len(target))
 
+def get_split_train_target(dataset, ten_fold):
+    train, target, repo_train = get_train_target(dataset)
+    if ten_fold:
+        with open('./repolist.json', 'r', encoding='utf-8') as f:
+            repos = json.load(f)['repolist']
+            random.shuffle(repos)
+            test_repos = set(repos[:len(repos)//10])
+            x_train, y_train, x_test, y_test = [], [], [], []
+            for i in range(len(train)):
+                if repo_train[i] in test_repos:
+                    x_test.append(train[i])
+                    y_test.append(target[i])
+                else:
+                    x_train.append(train[i])
+                    y_train.append(target[i])
+            return x_train, x_test, y_train, y_test
+
+    else:
+        return train_test_split(train, target, test_size=0.1)
+
 dataset = {}
 with open('./c5_2.json', 'r', encoding='utf-8') as jfile:
     dataset = json.load(jfile)
@@ -105,10 +129,14 @@ dataset = dataset['conf']
 dataset = [sample for sample in dataset if not is_trivial(sample)]
 
 random.shuffle(dataset)
-train, target = get_train_target(dataset)
-x_train, x_test, y_train, y_test = train_test_split(train, target, test_size=0.1)
+# train, target = get_train_target(dataset)
+# x_train, x_test, y_train, y_test = train_test_split(train, target, test_size=0.2)
+ten_fold = False
+udersample = True
+x_train, x_test, y_train, y_test = get_split_train_target(dataset, ten_fold)
 
 # clf = tree.DecisionTreeClassifier()
+# clf = RandomForestClassifier(max_depth=35, min_samples_split=5, random_state=0)
 clf = RandomForestClassifier(max_depth=35, min_samples_split=5, random_state=0, class_weight='balanced')
 clf.fit(x_train, y_train)
 
