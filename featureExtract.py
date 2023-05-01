@@ -40,8 +40,8 @@ def collect_conflict(data, conf_dict, fileIndex):
 def is_blank(s):
     if s == '':
         return True
-    for i in range(len(s)):
-        if s not in [' ', '\n', '\t']:
+    for c in s:
+        if c not in [' ', '\n', '\t']:
             return False
     return True
 

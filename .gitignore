@@ -1,0 +1,17 @@
+__pycache__/
+data/
+results/
+web_service/
+.vscode/
+vendor/
+models/
+testcase/
+testfile/
+
+test.ipynb
+
+*.json
+*.joblib
+*.jar
+
+
