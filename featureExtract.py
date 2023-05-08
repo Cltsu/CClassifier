@@ -1,7 +1,6 @@
 import json
 import os
 import csv
-import jpype
 import pandas as pd
 import re
 import functools

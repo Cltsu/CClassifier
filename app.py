@@ -1,7 +1,6 @@
 
 from flask import Flask, request
 from flask import jsonify
-import jpype
 import os
 import classify_utils
 
