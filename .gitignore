@@ -3,10 +3,10 @@ data/
 results/
 web_service/
 .vscode/
-vendor/
 testcase/
 testfile/
-
+.github/
+build/
 test.ipynb
 
 *.json

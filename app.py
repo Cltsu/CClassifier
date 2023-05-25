@@ -5,9 +5,12 @@ import os
 import classify_utils
 
 app = Flask(__name__)
-
+from flask_cors import CORS, cross_origin
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content_Type'
 
 @app.route("/predict", methods=['POST'])
+@cross_origin
 def predict():
     conf_data = request.get_json()
     repo_path = conf_data['path']
@@ -54,3 +57,5 @@ def predict():
     ret['data'] = labels
     return jsonify(ret)
 
+if __name__ == "__main__":
+    app.run()
