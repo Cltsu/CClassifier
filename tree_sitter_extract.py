@@ -1,15 +1,14 @@
 from tree_sitter import Language, Parser
 
-# Language.build_library(
-#     'build/my-languages.so',
-
-#     [
-#         'vendor/tree-sitter-cpp',
-#         'vendor/tree-sitter-kotlin',
-#         'vendor/tree-sitter-java',
-#     ]
-# )
-
+def create_treesitter_so():
+    Language.build_library(
+        'build/my-languages.so',
+        [
+            'vendor/tree-sitter-cpp',
+            'vendor/tree-sitter-kotlin',
+            'vendor/tree-sitter-java',
+        ]
+    )
 
 def get_tree_sitter_features(conf_info, file_type):
     return extract_constructs_edit_info(conf_info, file_type)

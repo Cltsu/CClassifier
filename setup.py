@@ -1,0 +1,2 @@
+import tree_sitter_extract
+tree_sitter_extract.create_treesitter_so()
