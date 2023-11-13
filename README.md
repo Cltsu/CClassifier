@@ -1,4 +1,9 @@
 ### 配置环境
+为tree sitter生成so库，执行setup.py，会在生成/build/my-language.so文件
+```
+python setup.py
+```
+
 envirment.yml包含了本模块的完整依赖，在当前目录下使用命令创建anaconda环境并启动
 ```
 conda env create -f environment.yml

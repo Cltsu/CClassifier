@@ -7,6 +7,7 @@ import functools
 import tree_sitter_extract
 import joblib
 import numpy as np
+import chardet
 
 # parameter: conf_info, path of [conf,left,right,base], file_type ['cpp', 'java', 'kotlin']
 # return featured conflict
@@ -20,6 +21,24 @@ def get_featured_conflict(conf_info, conf_path, a_path, b_path, base_path, file_
     }, file_type)
 
 
+def count_chunk_num(conflict_path):
+    try:
+        with open(conflict_path, 'r', encoding='utf-8') as m:
+            merged =  [line for line in m.readlines()]
+    except UnicodeDecodeError as e:
+        with open(conflict_path, 'rb') as f:
+            content = f.read()
+            result = chardet.detect(content)
+            encoding = result['encoding']
+        with open(conflict_path, 'r', encoding=encoding) as m:
+            merged =  [line for line in m.readlines()]
+    chunk_num = 0
+    for line in merged:
+        if line.startswith('<<<<<'):
+            chunk_num += 1
+    return chunk_num
+
+
 def extract_feature(conf_info, file_type):
     cons_and_edit = tree_sitter_extract.get_tree_sitter_features(conf_info, file_type)
     a_constructs = cons_and_edit['a_cons_edit']['constructs']
@@ -27,13 +46,14 @@ def extract_feature(conf_info, file_type):
     b_constructs = cons_and_edit['b_cons_edit']['constructs']
     b_identifers = cons_and_edit['b_cons_edit']['identifiers']
     base_identifers = cons_and_edit['base_cons_edit']['identifiers']
-
+    chunk_num = count_chunk_num(conf_info['conf_path'])
     return {
         'a_constructs' : process_constructs(a_constructs),
         'b_constructs' : process_constructs(b_constructs),
         'a_id_sim' : get_identifier_similarity(a_identifers, base_identifers),
         'b_id_sim' : get_identifier_similarity(b_identifers, base_identifers),
         'ab_id_sim' : get_identifier_similarity(a_identifers, b_identifers),
+        'chunk_num' : chunk_num,
         **get_line_similarity(conf_info),
     }
 
@@ -67,9 +87,14 @@ def get_line_similarity(conf_info):
 # 通过project_name 来查找调用哪一个模型
 def predict(project_name, file_type, v1, v2, base, conf):
     vec_clf = get_model(project_name, file_type)
+    print(conf)
     conflict_chunks = get_conf_info(conf)
+    print(conflict_chunks)
     featured_conflicts = [get_featured_conflict(chunk, conf, v1, v2, base, file_type) for chunk in conflict_chunks]
+    print(featured_conflicts)
     labels_proba = [vec_clf.predict_proba(chunk) for chunk in featured_conflicts]
+    print("probability of [v1, v2, cb, cc, nc] : ")
+    print(labels_proba)
     labels = ['V1', 'V2', 'CB', 'CC', 'NC']
     ret = []
     for i in range(len(labels_proba)):

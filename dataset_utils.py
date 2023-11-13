@@ -12,12 +12,16 @@ import train_utils
 # 传入gitMergeScenario获得的数据集
 # 得到可以用于训练的json文件
 def conflict_process_pipeline(conflicts_path, project_name, file_type, work_dir):
+    json_path = work_dir + "/datasets/" + file_type + '/' + project_name + ".json"
+    conflict_data_process_pipeline(conflicts_path, json_path)
+    train_utils.train_model(project_name, json_path, file_type, save_model = True, save_path = './models/')
+
+
+def conflict_data_process_pipeline(conflicts_path, json_path):
     # index_files_path = "./index_conflict_files/" + project_name + '/'
-    json_path = work_dir + "datasets/" + project_name + ".json"
     extract_metadata_for_one_gitrepo(conflicts_path)
     # move_and_index_conflict_files(conflicts_path, index_files_path)
     collect(conflicts_path, json_path)
-    train_utils.train_model(project_name, json_path, save_model = True, save_path = './models/')
 
 
 # 从gitMergeScenario中获得的数据集，首先抽取出metadata，放在对应的conflict tuple文件夹内
@@ -81,5 +85,8 @@ def collect(index_repo_path, json_path=""):
                             else:
                                 file_type = 'cpp'
                             conf_list.append(dict(classify_utils.get_featured_conflict(cur_conf, merged_path, a_path, b_path, base_path, file_type), **cur_conf))
-    with open(json_path, 'w', encoding='utf-8') as jfile:
+    
+    if not os.path.exists(os.path.dirname(json_path)):
+        os.makedirs(os.path.dirname(json_path))
+    with open(json_path, 'w+', encoding='utf-8') as jfile:
         jfile.write(json.dumps({"conf" : conf_list}))

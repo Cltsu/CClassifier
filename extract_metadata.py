@@ -32,7 +32,7 @@ def extract_metadata_from_m_and_r(m, r):
             'a_contents': m[cstart[i] + 1 : c2[i]],
             'base_contents':m[c2[i] + 1 : c3[i]],
             'b_contents': m[c3[i] + 1 : cend[i]],
-            'chunk_num' : conf_nums,
+            'chunk_num' : conf_nums - 1,
             'file_suffix': file_suffix
         }
         find_res(conf, r)
@@ -75,9 +75,9 @@ def is_blank(s):
 
 def find_res(conf, resolve):
     def best_match(fix, res):
-        assert len(fix) > 0
+        assert len(fix) >= 0
         if len(fix) == 0:
-            return -10
+            return []
         
         cur_index = []
         max_match = 0
@@ -200,5 +200,5 @@ def extract_metadata_file(project_path):
                         'filetype': file_suffix
                     }
                 conf_list.append(cur_confs)
-                with open(os.path.join(home, index + '_metadata.json'), 'w', encoding='utf-8') as j:
+                with open(os.path.join(home, index + 'metadata.json'), 'w', encoding='utf-8') as j:
                     j.write(json.dumps(cur_confs))

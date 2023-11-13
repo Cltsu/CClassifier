@@ -18,10 +18,10 @@ headers = {
 }
 
 data = {
-    'version1' : r'G:\project\python\CC\testcase/151_a.java',
-    'version2' : r'G:\project\python\CC\testcase/151_b.java',
-    'conflict': r'G:\project\python\CC\testcase/151_merged.java',
-    'base': r'G:\project\python\CC\testcase/151_base.java',
+    'version1' : r'G:\project\python\CC\testcase\a.java',
+    'version2' : r'G:\project\python\CC\testcase\b.java',
+    'conflict': r'G:\project\python\CC\testcase\merged.java',
+    'base': r'G:\project\python\CC\testcase\base.java',
     'path': 'cc',
     'source': 'b1',
     'target': 'b2',
@@ -31,3 +31,16 @@ r = requests.post('http://127.0.0.1:5000/predict', data=json.dumps(data), header
 state = json.loads(r.text)
 print(state)
 
+# import dataset_utils
+# import train_utils
+# import config
+
+# dataset_utils.conflict_process_pipeline('/work/gitMergeScenario/conflict_files/cpp/av', 'av', 'cpp', config.CONFLICT_PATH)
+# dataset_utils.conflict_data_process_pipeline('/work/testcase1', '/work/testcase1/1.json')
+
+# train_utils.evaluate_model('telephony', "/work/gitMergeScenario/datasets/java/telephony.json", save_csv=True)
+# train_utils.evaluate_model('av', "/work/gitMergeScenario/datasets/cpp/av.json", save_csv=True)
+# train_utils.evaluate_model('layoutlib', "/work/gitMergeScenario/datasets/java/layoutlib.json", save_csv=True)
+# train_utils.evaluate_model('wifi', "/work/gitMergeScenario/datasets/java/wifi.json", save_csv=True)
+# train_utils.evaluate_model('base', "/work/gitMergeScenario/datasets/java/base.json", save_csv=True)
+# train_utils.evaluate_model('Notes', "/work/gitMergeScenario/datasets/kotlin/Notes.json", save_csv=True)

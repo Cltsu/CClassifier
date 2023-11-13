@@ -9,6 +9,9 @@ from sklearn.pipeline import Pipeline
 import json
 import random
 import pandas as pd
+import numpy as np
+import csv
+import os
 
 def sample_normal(dataset):
     label_set = set([sample['label'] for sample in dataset])
@@ -43,6 +46,7 @@ def get_train_target(dataset):
         'a_line_sim',
         'b_line_sim',
         'ab_line_sim',
+        'chunk_num',
         'label',
     ]
     feature_dataset = [{key:value for (key, value) in data.items() if key in features} for data in dataset]
@@ -79,7 +83,7 @@ def error_predict_analysis(predict, target, label_set):
     print(count[target[0]] / len(target))
 
 
-def train_model(project_name, json_path, save_model = False, save_path = ''):
+def evaluate_model(project_name, json_path, save_csv=False):
     dataset = {}
     with open(json_path, 'r', encoding='utf-8') as jfile:
         dataset = json.load(jfile)
@@ -92,14 +96,10 @@ def train_model(project_name, json_path, save_model = False, save_path = ''):
     vec=DictVectorizer(sparse=False)
     train = vec.fit_transform(train)
 
-    x_train, x_test, y_train, y_test = train_test_split(train, target, test_size=0.2)
+    x_train, x_test, y_train, y_test = train_test_split(train, target, test_size=0.15)
     ## clf = RandomForestClassifier(max_depth=35, min_samples_split=5, random_state=0, class_weight='balanced')
-    clf = RandomForestClassifier(max_depth=30, min_samples_split=2, random_state=0, class_weight='balanced', n_estimators=400, min_samples_leaf= 1)
+    clf = RandomForestClassifier(max_depth=35, min_samples_split=2, random_state=0, class_weight='balanced', n_estimators=400, min_samples_leaf= 1)
     clf.fit(x_train, y_train)
-
-    if save_model:
-        vec_clf = Pipeline([('vectorizer', vec), ('forest', clf)])
-        joblib.dump(vec_clf, save_path + project_name + '.joblib')
 
     label_set = set([label for label in target])
     labeled_test = {label:([],[]) for label in label_set}
@@ -120,6 +120,7 @@ def train_model(project_name, json_path, save_model = False, save_path = ''):
     precision = precision_score(y_test, predicts, average=None)
     recall = recall_score(y_test, predicts, average=None)
     f1 = f1_score(y_test, predicts, average=None)
+    
     print(sorted(list(label_set)))
     print('precision:')
     print(precision)
@@ -129,10 +130,63 @@ def train_model(project_name, json_path, save_model = False, save_path = ''):
     print(f1)
     print('overall:')
     print('accuracy:')
-    print(accuracy_score(y_test, predicts))
+    acc = accuracy_score(y_test, predicts)
+    print(acc)
     print('precision:')
-    print(precision_score(y_test, predicts, average='weighted'))
+    pre = precision_score(y_test, predicts, average='weighted')
+    print(pre)
     print('recall:')
-    print(recall_score(y_test, predicts, average='weighted'))
+    rec = recall_score(y_test, predicts, average='weighted')
+    print(rec)
     print('f1:')
-    print(f1_score(y_test, predicts, average='weighted'))
+    f1_s = f1_score(y_test, predicts, average='weighted')
+    print(f1_s)
+
+    statistics = [np.append(precision, pre), np.append(recall, rec), np.append(f1, f1_s)]
+    save_to_csv(statistics, project_name)
+
+def save_to_csv(statistics, project_name):
+    col = ['A', 'B', 'CB', 'CC', 'NC', 'overall']
+    stat = pd.DataFrame(columns=col, data=statistics)
+
+    all_info = None
+    col = ['repo','A-precision', 'A-recall', 'A-f1', 'B-precision', 'B-recall', 'B-f1', 'CB-precision', 'CB-recall', 'CB-f1',
+           'CC-precision', 'CC-recall', 'CC-f1','NC-precision', 'NC-recall', 'NC-f1', 'overall-precision', 'overall-recall', 'overall-f1']
+    if os.path.exists('./statistics/repo.csv'):
+        all_info = pd.read_csv('./statistics/repo.csv')
+    else:
+        all_info = pd.DataFrame(columns=col)
+    cur_info = np.array([statistics[0], statistics[1], statistics[2]]).transpose().reshape(1, -1)
+    cur_info = pd.DataFrame(columns=col[1:], data=cur_info)
+    cur_info['repo'] = project_name
+    print(cur_info)
+
+    all_info = all_info.append(cur_info)
+    all_info.to_csv('./statistics/' + 'repo.csv', index=False)
+
+    stat.insert(0, '', ['precision', 'recall', 'f1-score'])
+    stat.to_csv('./statistics/' + project_name + '.csv', index=False)
+    
+
+
+def train_model(project_name, json_path, file_type, save_model = True, save_path = ''):
+    dataset = {}
+    with open(json_path, 'r', encoding='utf-8') as jfile:
+        dataset = json.load(jfile)
+    dataset = dataset['conf']
+    dataset = [sample for sample in dataset if not is_trivial(sample)]
+
+    random.shuffle(dataset)
+    train, target = get_train_target(dataset)
+
+    vec=DictVectorizer(sparse=False)
+    train = vec.fit_transform(train)
+
+    clf = RandomForestClassifier(max_depth=35, min_samples_split=2, random_state=0, class_weight='balanced', n_estimators=400, min_samples_leaf= 1)
+    clf.fit(train, target)
+
+    if save_model:
+        vec_clf = Pipeline([('vectorizer', vec), ('forest', clf)])
+        if(project_name != ''):
+            project_name += '_'
+        joblib.dump(vec_clf, save_path + project_name  + file_type + '.joblib')

@@ -1,14 +1,25 @@
 from tree_sitter import Language, Parser
 
+# Language.build_library(
+#     'build/my-languages.so',
+
+#     [
+#         'vendor/tree-sitter-cpp',
+#         'vendor/tree-sitter-kotlin',
+#         'vendor/tree-sitter-java',
+#     ]
+# )
 def create_treesitter_so():
     Language.build_library(
         'build/my-languages.so',
+
         [
             'vendor/tree-sitter-cpp',
             'vendor/tree-sitter-kotlin',
             'vendor/tree-sitter-java',
         ]
     )
+
 
 def get_tree_sitter_features(conf_info, file_type):
     return extract_constructs_edit_info(conf_info, file_type)
@@ -76,14 +87,14 @@ def extract_features_from_one_file(file_path, region, parser):
 
 def get_constructs_and_edit_info(file_path, startline, endline, parser):
     def search_cons(root, i, j, cons):
-        if(root.start_point[0] >= startline and root.end_point[0] <= endline):
+        if(root.start_point[0] >= startline and root.end_point[0] < endline):
             cons.append(root)
         else:
             for node in root.children:
                 search_cons(node, i, j, cons)
 
     def search_ids(root, i, j, ids):
-        if(root.start_point[0] >= startline and root.end_point[0] <= endline and root.type == 'identifier'):
+        if(root.start_point[0] >= startline and root.end_point[0] < endline and root.type == 'identifier'):
             ids.append(root)
         for node in root.children:
             search_ids(node, i, j, ids)
@@ -109,3 +120,13 @@ def get_constructs_and_edit_info(file_path, startline, endline, parser):
 #     code = f.read()
 #     ast = parser.parse(code.encode())
 #     print(ast.root_node.text)
+
+# Language.build_library(
+#     'build/my-languages.so',
+
+#     [
+#         'vendor/tree-sitter-cpp',
+#         'vendor/tree-sitter-kotlin',
+#         'vendor/tree-sitter-java',
+#     ]
+# )
