@@ -11,25 +11,25 @@
 #      './web_service/testcase/merged.java'))
 
 
-import requests
-import json 
-headers = {
-"Content-Type": "application/json;charset=utf8"
-}
+# import requests
+# import json 
+# headers = {
+# "Content-Type": "application/json;charset=utf8"
+# }
 
-data = {
-    'version1' : r'G:\project\python\CC\testcase\a.java',
-    'version2' : r'G:\project\python\CC\testcase\b.java',
-    'conflict': r'G:\project\python\CC\testcase\merged.java',
-    'base': r'G:\project\python\CC\testcase\base.java',
-    'path': 'cc',
-    'source': 'b1',
-    'target': 'b2',
-    'filetype': 'java',
-}
-r = requests.post('http://127.0.0.1:5000/predict', data=json.dumps(data), headers=headers)
-state = json.loads(r.text)
-print(state)
+# data = {
+#     'version1' : r'G:\project\python\CC\testcase\a.java',
+#     'version2' : r'G:\project\python\CC\testcase\b.java',
+#     'conflict': r'G:\project\python\CC\testcase\merged.java',
+#     'base': r'G:\project\python\CC\testcase\base.java',
+#     'path': 'cc',
+#     'source': 'b1',
+#     'target': 'b2',
+#     'filetype': 'java',
+# }
+# r = requests.post('http://127.0.0.1:5000/predict', data=json.dumps(data), headers=headers)
+# state = json.loads(r.text)
+# print(state)
 
 # import dataset_utils
 # import train_utils
@@ -44,3 +44,10 @@ print(state)
 # train_utils.evaluate_model('wifi', "/work/gitMergeScenario/datasets/java/wifi.json", save_csv=True)
 # train_utils.evaluate_model('base', "/work/gitMergeScenario/datasets/java/base.json", save_csv=True)
 # train_utils.evaluate_model('Notes', "/work/gitMergeScenario/datasets/kotlin/Notes.json", save_csv=True)
+
+
+import dataset_utils
+import train_utils
+import config
+
+dataset_utils.conflict_process_pipeline('/work/gitMergeScenario/conflict_files/cpp/av', 'av', 'java', config.CONFLICT_PATH)

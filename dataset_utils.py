@@ -30,29 +30,27 @@ def extract_metadata_for_one_gitrepo(repo_path):
     print('extract_metadata')
     extract_metadata.extract_metadata_file(repo_path)
 
-
-# # 把得到metadata之后的conflict tuple移动到一个文件夹内部并编号
-# def move_and_index_conflict_files(conflict_path, save_path):
-#     print('move_and_index_conflict_files')
-#     chunk_index = 0
-
-#     if not os.path.exists(save_path):
-#         os.makedirs(save_path)
-#         print(f"{save_path} created successfully.")
-#     else:
-#         return
-
-#     for home, dirs, files in os.walk(conflict_path):
-#         for filename in files:
-#             if filename.endswith('metadata.json') and os.path.isfile(os.path.join(home, 'metadata.json')) and os.path.isfile(os.path.join(home, 'ours.java')) and os.path.isfile(os.path.join(home, 'theirs.java')) and os.path.isfile(os.path.join(home, 'conflict.java')) and os.path.isfile(os.path.join(home, 'resolve.java')):
-#                 shutil.copy(os.path.join(home, 'metadata.json'), os.path.join(save_path, str(chunk_index) + '_' + 'metadata.json'))
-#                 shutil.copy(os.path.join(home, 'ours.java'), os.path.join(save_path, str(chunk_index) + '_' + 'a.java'))
-#                 shutil.copy(os.path.join(home, 'theirs.java'), os.path.join(save_path, str(chunk_index) + '_' + 'b.java'))
-#                 shutil.copy(os.path.join(home, 'conflict.java'), os.path.join(save_path, str(chunk_index) + '_' + 'merged.java'))
-#                 shutil.copy(os.path.join(home, 'resolve.java'), os.path.join(save_path, str(chunk_index) + '_' + 'resolved.java'))
-#                 if os.path.isfile(os.path.join(home, 'base.java')):
-#                     shutil.copy(os.path.join(home, 'base.java'), os.path.join(save_path, str(chunk_index) + '_' + 'base.java'))
-#                 chunk_index += 1
+# deprecated
+# 把得到metadata之后的conflict tuple移动到一个文件夹内部并编号
+def move_and_index_conflict_files(conflict_path, save_path):
+    print('move_and_index_conflict_files')
+    chunk_index = 0
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+        print(f"{save_path} created successfully.")
+    else:
+        return
+    for home, dirs, files in os.walk(conflict_path):
+        for filename in files:
+            if filename.endswith('metadata.json') and os.path.isfile(os.path.join(home, 'metadata.json')) and os.path.isfile(os.path.join(home, 'ours.java')) and os.path.isfile(os.path.join(home, 'theirs.java')) and os.path.isfile(os.path.join(home, 'conflict.java')) and os.path.isfile(os.path.join(home, 'resolve.java')):
+                shutil.copy(os.path.join(home, 'metadata.json'), os.path.join(save_path, str(chunk_index) + '_' + 'metadata.json'))
+                shutil.copy(os.path.join(home, 'ours.java'), os.path.join(save_path, str(chunk_index) + '_' + 'a.java'))
+                shutil.copy(os.path.join(home, 'theirs.java'), os.path.join(save_path, str(chunk_index) + '_' + 'b.java'))
+                shutil.copy(os.path.join(home, 'conflict.java'), os.path.join(save_path, str(chunk_index) + '_' + 'merged.java'))
+                shutil.copy(os.path.join(home, 'resolve.java'), os.path.join(save_path, str(chunk_index) + '_' + 'resolved.java'))
+                if os.path.isfile(os.path.join(home, 'base.java')):
+                    shutil.copy(os.path.join(home, 'base.java'), os.path.join(save_path, str(chunk_index) + '_' + 'base.java'))
+                chunk_index += 1
 
 
 # 构建数据集相关的函数,从得到metadata文件之后的tuple集合中抽取出所有conflict
