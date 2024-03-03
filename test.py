@@ -49,5 +49,8 @@
 import dataset_utils
 import train_utils
 import config
+import extract_metadata
 
-dataset_utils.conflict_process_pipeline('/work/gitMergeScenario/conflict_files/cpp/av', 'av', 'java', config.CONFLICT_PATH)
+# extract_metadata.extract_metadata_file('G:\project\python\CC\junit4')
+dataset_utils.collect('G:\project\python\CC\junit4', 'G:\project\python\CC\\results\junit4.json')
+# dataset_utils.conflict_process_pipeline('/work/gitMergeScenario/conflict_files/cpp/av', 'av', 'java', config.CONFLICT_PATH)

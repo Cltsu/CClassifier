@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import chardet
 
 file_suffix = ""
@@ -49,12 +50,12 @@ def compute_label(conf):
     elif b == res:
         return 'B'
     elif a + b == res:
-        return "CC12"
+        return "CC"
     # elif len(res) == 0:
     #     return "EM"
     elif b + a == res:
-        return "CC21"
-    elif all([line in a or line in b for line in res]):
+        return "CC"
+    elif all([line in a or line in b for line in res]) and res != []:
         return 'CB'
     else:
         return 'NC'
@@ -162,13 +163,12 @@ def extract_metadata_file(project_path):
     conf_list = []
     for home, dirs, files in os.walk(project_path):
         for filename in files:
-            if 'merged' in filename:
-                index = filename[:filename.index('_') + 1]
+            if 'conflict' in filename:
                 suffix = filename[filename.index('.'):]
                 print('processing' + home + filename)
 
-                conflict_path = os.path.join(home, index + 'merged' + suffix)
-                resolve_path = os.path.join(home, index + 'resolved' + suffix)
+                conflict_path = os.path.join(home, 'conflict' + suffix)
+                resolve_path = os.path.join(home, 'resolve' + suffix)
                 global file_suffix
                 file_suffix = suffix
 
@@ -194,11 +194,77 @@ def extract_metadata_file(project_path):
                     with open(resolve_path, 'r', encoding=encoding) as m:
                         resolved =  [line for line in m.readlines()]
 
+                match = re.search(r"/([^/]+)/([a-fA-F0-9]{40})_(\d+)/", home)
+                if match:
+                    name = match.group(1)  # This extracts 'name'
+                    sha1_hash = match.group(2)  # This extracts the SHA1 hash
+                    timestamp = match.group(3)  # This extracts the Timestamp
+                else:
+                    match = re.search(r"\\([^\\]+)\\([a-fA-F0-9]{40})_(\d+)\\", home)
+                    if match:
+                        name = match.group(1)  # This extracts 'name'
+                        sha1_hash = match.group(2)  # This extracts the SHA1 hash
+                        timestamp = match.group(3)  # This extracts the Timestamp
+                    else:
+                        name = sha1_hash = timestamp = "unkown"
+
+                filename = os.path.basename(home)
+
                 cur_confs = {
                         "conflicting_chunks": flatten_text(extract_metadata_from_m_and_r(merged, resolved)),
-                        'filename': home,
-                        'filetype': file_suffix
+                        'path': home,
+                        'filename': filename,
+                        'filetype': file_suffix,
+                        'commitID': sha1_hash,
+                        'commitTime': timestamp,
+                        'project_name': name,
                     }
                 conf_list.append(cur_confs)
-                with open(os.path.join(home, index + 'metadata.json'), 'w', encoding='utf-8') as j:
+                with open(os.path.join(home, 'metadata.json'), 'w', encoding='utf-8') as j:
                     j.write(json.dumps(cur_confs))
+
+
+# def extract_metadata_file(project_path):
+#     conf_list = []
+#     for home, dirs, files in os.walk(project_path):
+#         for filename in files:
+#             if 'merged' in filename:
+#                 index = filename[:filename.index('_') + 1]
+#                 suffix = filename[filename.index('.'):]
+#                 print('processing' + home + filename)
+
+#                 conflict_path = os.path.join(home, index + 'merged' + suffix)
+#                 resolve_path = os.path.join(home, index + 'resolved' + suffix)
+#                 global file_suffix
+#                 file_suffix = suffix
+
+#                 try:
+#                     with open(conflict_path, 'r', encoding='utf-8') as m:
+#                         merged =  [line for line in m.readlines()]
+#                 except UnicodeDecodeError as e:
+#                     with open(conflict_path, 'rb') as f:
+#                         content = f.read()
+#                         result = chardet.detect(content)
+#                         encoding = result['encoding']
+#                     with open(conflict_path, 'r', encoding=encoding) as m:
+#                         merged =  [line for line in m.readlines()]
+
+#                 try:
+#                     with open(resolve_path, 'r', encoding='utf-8') as r:
+#                         resolved =  [line for line in r.readlines()]
+#                 except UnicodeDecodeError as e:
+#                     with open(resolve_path, 'rb') as f:
+#                         content = f.read()
+#                         result = chardet.detect(content)
+#                         encoding = result['encoding']
+#                     with open(resolve_path, 'r', encoding=encoding) as m:
+#                         resolved =  [line for line in m.readlines()]
+
+#                 cur_confs = {
+#                         "conflicting_chunks": flatten_text(extract_metadata_from_m_and_r(merged, resolved)),
+#                         'filename': home,
+#                         'filetype': file_suffix
+#                     }
+#                 conf_list.append(cur_confs)
+#                 with open(os.path.join(home, index + 'metadata.json'), 'w', encoding='utf-8') as j:
+#                     j.write(json.dumps(cur_confs))

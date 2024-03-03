@@ -7,6 +7,9 @@ testcase/
 testfile/
 .github/
 build/
+junit4/
+models/
+build/
 test.ipynb
 
 *.json

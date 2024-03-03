@@ -55,10 +55,26 @@ def extract_feature(conf_info, file_type):
         'ab_id_sim' : get_identifier_similarity(a_identifers, b_identifers),
         'chunk_num' : chunk_num,
         **get_line_similarity(conf_info),
+        **get_chunk_info(conf_info),
+    }
+
+def get_chunk_info(conf_info):
+    a_line_num = conf_info['a_contents'].count('\n')
+    b_line_num = conf_info['b_contents'].count('\n')
+    o_line_num = conf_info['base_contents'].count('\n')
+    return {
+        'a_line_num' : a_line_num,
+        'b_line_num' : b_line_num,
+        'o_line_num' : o_line_num,
+        'ab_line_diff' : a_line_num - b_line_num,
+        'ao_line_diff' : a_line_num - o_line_num,
+        'bo_line_diff' : b_line_num - o_line_num,
     }
 
 def process_constructs(constructs):
-    return constructs
+    seen = set()
+    result = [x for x in constructs if x not in ['{','}',',','(',')'] and not (x in seen or seen.add(x))]
+    return result
 
 def get_identifier_similarity(a_ids, b_ids):
     if len(a_ids) == 0 or len(b_ids) == 0:
